@@ -1,4 +1,4 @@
-namespace Packages.com.oikoume.voxelizer.Editor
+namespace Editor
 {
     public static class VoxelizerGrid
     {
@@ -6,5 +6,4 @@ namespace Packages.com.oikoume.voxelizer.Editor
         {
         }
     }
-
 }

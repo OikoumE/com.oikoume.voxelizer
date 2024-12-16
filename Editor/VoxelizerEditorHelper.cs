@@ -1,8 +1,7 @@
-using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Packages.com.oikoume.voxelizer.Scripts.Editor
+namespace Editor
 {
     public static class VoxelizerEditorHelper
     {
@@ -21,15 +20,6 @@ namespace Packages.com.oikoume.voxelizer.Scripts.Editor
             fontStyle = FontStyle.Bold
         };
 
-        public static int DrawIntField(string label, int intValue, int fontSize)
-        {
-            var textLabelStyle = new GUIStyle(GUI.skin.label) { fontSize = fontSize };
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, textLabelStyle, GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.25f));
-            intValue = EditorGUILayout.IntField(intValue, GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.75f));
-            GUILayout.EndHorizontal();
-            return intValue;
-        }
 
         // helper method for drawing textField
         public static string DrawTextField(string label, string textContent, int fontSize)
@@ -71,29 +61,15 @@ namespace Packages.com.oikoume.voxelizer.Scripts.Editor
             return t;
         }
 
-        public static int DrawIntSlider(string label, int currVal, int indent)
+        public static int DrawIntSlider(string label, int currVal, int indent, int min = 0, int max = 100)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(indent);
             GUILayout.Label(label);
-            var newInt = EditorGUILayout.IntSlider(currVal, 12, 35, GUILayout.ExpandWidth(true));
+            var newInt = EditorGUILayout.IntSlider(currVal, min, max, GUILayout.ExpandWidth(true));
             GUILayout.EndHorizontal();
 
             return newInt;
-        }
-    }
-
-    public static class VoxelizerExtensions
-    {
-        public static string FirstCharToUpper(this string input)
-        {
-            if (input == null)
-                throw new ArgumentNullException(nameof(input));
-            if (string.IsNullOrEmpty(input))
-                throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input));
-            var charArr = input.ToCharArray();
-            charArr[0] = char.ToUpper(charArr[0]);
-            return new string(charArr);
         }
     }
 }
