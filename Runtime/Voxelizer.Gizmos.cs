@@ -31,6 +31,25 @@ public partial class Voxelizer
             }
         }
 
+        void DrawSubNodes(Vector3 currOrigin, GridData data)
+        {
+            return;
+            var s = data.subGridSize / data.SubNodeSize;
+            var nodeSize = data.SubNodeSize;
+            var halfNodeSize = nodeSize / 2;
+            var center = currOrigin;
+
+            for (var z = -s / 2; z < s / 2; z++)
+            for (var y = -s / 2; y < s / 2; y++)
+            for (var x = -s / 2; x < s / 2; x++)
+            {
+                var newOffset = new Vector3(halfNodeSize + nodeSize * x, halfNodeSize + nodeSize * y,
+                    halfNodeSize + nodeSize * z);
+                Gizmos.color = Color.grey * .25f;
+                Gizmos.DrawWireCube(center + newOffset,
+                    Vector3.one * data.nodeSize - Vector3.one * nodeVizSpaceSize);
+            }
+        }
 
         void DrawNodes(GridData data)
         {
@@ -54,6 +73,8 @@ public partial class Voxelizer
             for (var y = -maxY / 2; y < maxY / 2; y++)
             for (var x = -maxZ / 2; x < maxZ / 2; x++)
             {
+                var centerIndex = new Vector3Int(x, y, z);
+                DrawSubNodes(centerIndex, data);
                 var newOffset = new Vector3(halfNodeSize + nodeSize * x, halfNodeSize + nodeSize * y,
                     halfNodeSize + nodeSize * z);
                 Gizmos.color = Color.red * .5f;

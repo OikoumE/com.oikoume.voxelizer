@@ -14,7 +14,7 @@ namespace Editor
         public static GridData GetCurrentGridData()
         {
             if (!_gridData)
-                _gridData = ScriptableObject.CreateInstance<GridData>() ;
+                _gridData = ScriptableObject.CreateInstance<GridData>();
             return _gridData;
         }
 
@@ -24,8 +24,6 @@ namespace Editor
         /// <param name="type">The type of the ScriptableObject to inspect.</param>
         public static void RenderFields(Type type)
         {
-       
-
             if (!typeof(ScriptableObject).IsAssignableFrom(type))
             {
                 GUILayout.Label("Provided type is not a ScriptableObject.");
@@ -54,6 +52,7 @@ namespace Editor
                 if (!field.IsPublic && !field.IsDefined(typeof(SerializeField), true)) continue;
                 if (field.IsDefined(typeof(HideInInspector), true)) continue;
 
+
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(ObjectNames.NicifyVariableName(field.Name), GUILayout.ExpandWidth(true));
 
@@ -63,7 +62,7 @@ namespace Editor
                 object newValue = null;
                 // Render field based on its type and detect changes
                 if (field.FieldType == typeof(int))
-                    newValue = EditorGUILayout.IntField((int)field.GetValue(_gridData),
+                    newValue = EditorGUILayout.IntSlider((int)field.GetValue(_gridData), 0, 15,
                         GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType == typeof(float))
                     newValue = EditorGUILayout.Slider((float)field.GetValue(_gridData), 0.1f, 10,

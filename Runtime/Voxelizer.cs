@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -70,25 +71,26 @@ public partial class Voxelizer : MonoBehaviour
             var o = _gameObjects[i];
             if (!o.TryGetComponent(out MeshCollider meshCollider)) continue;
 
-            var newData = ScriptableObject.CreateInstance<GridData>();
-            var s = meshCollider.bounds.size;
 
-
-            newData.nodeSize = currentSettings.nodeSize;
-            newData.subGridSize = currentSettings.subGridSize;
+            var newData = CloneGridData(currentSettings);
             newData.Initialize(o, meshCollider);
             _gridData[i] = newData;
         }
 
-        void CalculateGridSize()
+        GridData CloneGridData(GridData gridData)
         {
-            // var nodeSize = data.nodeSize;
-            //
-            // var nodesZ = s.z / nodeSize;
-            // var nodesY = s.y / nodeSize;
-            // var nodesX = s.x / nodeSize;
-        }
+            var newData = ScriptableObject.CreateInstance<GridData>();
+            var fields = currentSettings.GetType()
+                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var field in fields)
+            {
+                if (field.IsNotSerialized) continue; // Skip non-serialized fields
+                var value = field.GetValue(currentSettings);
+                field.SetValue(newData, value);
+            }
 
+            return newData;
+        }
 
         //TODO grid and slap it
     }
