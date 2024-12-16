@@ -20,7 +20,7 @@ public partial class Voxelizer
             if (_gridData == null || _gridData.Length == 0) return;
             foreach (var data in _gridData)
             {
-                if (!data) continue;
+                if (!data || !data.IsInitialized) continue;
                 var c = Gizmos.color;
                 DrawMapOutline(data);
                 Gizmos.color = c;

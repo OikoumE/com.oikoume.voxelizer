@@ -29,19 +29,29 @@ public class GridData : ScriptableObject
 
     public Vector3 Position => _gameObject.transform.position;
 
-    public MeshCollider MeshCollider { get; private set; }
+    public MeshCollider VoxelizeObjectCollider { get; private set; }
 
     public int GridSizeCubed => Mathf.CeilToInt(GridSize.x * GridSize.y * GridSize.z);
     public Vector3 NodeSizeV3 => Vector3.one * nodeSize;
     public float SubNodeSize => nodeSize / subGridSize;
     public Vector3 SubSizeV3 => NodeSizeV3 / subGridSize;
 
-    public Bounds Bounds => MeshCollider?.bounds ?? new Bounds(Vector3.zero, Vector3.one);
+    public Bounds Bounds
+    {
+        get
+        {
+            if (VoxelizeObjectCollider) return VoxelizeObjectCollider.bounds;
+            return new Bounds(Vector3.zero, Vector3.zero); // Return empty bounds when no OtherCollider
+        }
+    }
+
+    public bool IsInitialized { get; private set; }
 
     public void Initialize(GameObject gameObject, MeshCollider meshCollider)
     {
         _gameObject = gameObject;
         name = _gameObject.name;
-        MeshCollider = meshCollider;
+        VoxelizeObjectCollider = meshCollider;
+        IsInitialized = true;
     }
 }

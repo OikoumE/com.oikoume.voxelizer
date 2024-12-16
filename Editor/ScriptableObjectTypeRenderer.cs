@@ -13,6 +13,8 @@ namespace Editor
 
         public static GridData GetCurrentGridData()
         {
+            if (!_gridData)
+                _gridData = ScriptableObject.CreateInstance<GridData>() ;
             return _gridData;
         }
 
@@ -22,8 +24,7 @@ namespace Editor
         /// <param name="type">The type of the ScriptableObject to inspect.</param>
         public static void RenderFields(Type type)
         {
-            if (!_gridData)
-                _gridData = ScriptableObject.CreateInstance(type) as GridData;
+       
 
             if (!typeof(ScriptableObject).IsAssignableFrom(type))
             {

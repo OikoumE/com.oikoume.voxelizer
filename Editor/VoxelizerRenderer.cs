@@ -84,10 +84,7 @@ namespace Editor
                 using (new EditorGUI.DisabledScope(gameObjects.Length == 0))
                 {
                     if (GUILayout.Button("Voxelize objects", EditorStyles.miniButton))
-                    {
-                        var data = ScriptableObjectTypeRenderer.GetCurrentGridData();
-                        voxelizer.Voxelize(gameObjects, data);
-                    }
+                        voxelizer.Voxelize(gameObjects, ScriptableObjectTypeRenderer.GetCurrentGridData());
                 }
             }
         }
