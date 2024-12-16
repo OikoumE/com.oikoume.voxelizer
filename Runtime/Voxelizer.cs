@@ -4,6 +4,30 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
+[Serializable] //
+public class GridNode
+{
+    public GridNodeType nodeType;
+    public Vector3 position;
+    public Vector3 size;
+    public int index;
+
+    public GridNode(Vector3 position, GridNodeType nodeType, Vector3 size, int index)
+    {
+        this.nodeType = nodeType;
+        this.position = position;
+        this.size = size;
+        this.index = index;
+    }
+}
+
+public enum GridNodeType
+{
+    Empty,
+    Occupied,
+    Blocked
+}
+
 public partial class Voxelizer : MonoBehaviour
 {
     private GameObject[] _gameObjects;
@@ -19,26 +43,49 @@ public partial class Voxelizer : MonoBehaviour
         {
             if (!data || !data.IsInitialized) continue;
             var max = data.GetSize();
+            var nodes = new GridNode[max.x * max.y * max.z];
+
             for (var z = -max.z; z < max.z; z++)
             for (var y = -max.y; y < max.y; y++)
             for (var x = -max.x; x < max.x; x++)
             {
+                var index = (z + max.z) * max.x * max.y + (y + max.y) * max.x + x + max.x;
                 var currentOrigin = data.NodeOffsetPosition(x, y, z);
-                IterateSubNodes(currentOrigin, data);
+                nodes[index] = IterateSubNodes(currentOrigin, data);
             }
+
+            data.Nodes = nodes;
         }
     }
 
-    private void IterateSubNodes(Vector3 currOrigin, GridData data)
+    private GridNode IterateSubNodes(Vector3 currOrigin, GridData data)
     {
+        var ns = data.SubNodeSize;
         var s = Mathf.CeilToInt(data.subGridResolution / 2f);
+        var maxResults = 10;
+        var results = new Collider[maxResults];
         for (var z = -s; z < s; z++)
         for (var y = -s; y < s; y++)
         for (var x = -s; x < s; x++)
         {
-            var newOffset = data.SubNodeOffsetPosition(currOrigin, x, y, z);
-            var currPos = currOrigin + newOffset;
+            var newPos = data.SubNodeOffsetPosition(currOrigin, x, y, z);
+            var index = (z + s) * data.subGridResolution * data.subGridResolution
+                        + (y + s) * data.subGridResolution
+                        + x + s;
+            var numberOfHits = Physics.OverlapBoxNonAlloc(newPos, ns * Vector3.one, results);
+            if (numberOfHits <= 0) continue;
+            // Vector3 position, GridNodeType nodeType, Vector3 size, int index)
+            foreach (var result in results)
+            {
+                //TODO determine the level of marched cube
+                // check each collider point or w.e
+            }
+
+            //TODO if valid
+            return new GridNode(newPos, GridNodeType.Empty, data.nodeSize * Vector3.one, index);
         }
+
+        return null;
     }
 
     public void GetValidGameObjects(ref GameObject[] gameObjects)

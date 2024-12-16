@@ -37,11 +37,8 @@ public partial class Voxelizer
             for (var z = -s; z < s; z++)
             for (var y = -s; y < s; y++)
             for (var x = -s; x < s; x++)
-            {
-                var newOffset  = data.SubNodeOffsetPosition(currOrigin, x, y, z);
-                Gizmos.DrawWireCube(currOrigin + newOffset,
+                Gizmos.DrawWireCube(data.SubNodeOffsetPosition(currOrigin, x, y, z),
                     Vector3.one * data.SubNodeSize - Vector3.one * nodeVizSpaceSize);
-            }
         }
 
         void DrawNodes(GridData data)
@@ -57,7 +54,7 @@ public partial class Voxelizer
             for (var y = -max.y; y < max.y; y++)
             for (var x = -max.x; x < max.x; x++)
             {
-                var currentOrigin = center + data.NodeOffsetPosition( x,y,z);
+                var currentOrigin = data.NodeOffsetPosition(x, y, z);
                 DrawSubNodes(currentOrigin, data);
                 Gizmos.DrawWireCube(currentOrigin,
                     Vector3.one * data.nodeSize - Vector3.one * nodeVizSpaceSize);

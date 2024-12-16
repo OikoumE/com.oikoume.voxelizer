@@ -49,20 +49,23 @@ public class GridData : ScriptableObject
     }
 
     public bool IsInitialized { get; private set; }
+    public GridNode[] Nodes { get; set; }
 
     public Vector3 NodeOffsetPosition(int x, int y, int z)
     {
         var ns = nodeSize;
-        var halfNs =Vector3.one * ns / 2f;
+        var halfNs = Vector3.one * ns / 2f;
         return Position + halfNs + new Vector3(ns * x, ns * y, ns * z);
     }
-    public Vector3 SubNodeOffsetPosition(Vector3 currOrigin,int x, int y, int z)
+
+    public Vector3 SubNodeOffsetPosition(Vector3 currOrigin, int x, int y, int z)
     {
         var ns = SubNodeSize;
-        var halfNs =Vector3.one * ns / 2f;
-        
+        var halfNs = Vector3.one * ns / 2f;
+
         return currOrigin + halfNs + new Vector3(ns * x, ns * y, ns * z);
     }
+
     public Vector3Int GetSize()
     {
         var ns = nodeSize;
