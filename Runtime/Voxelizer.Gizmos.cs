@@ -23,62 +23,43 @@ public partial class Voxelizer
                 if (!data || !data.IsInitialized) continue;
                 var c = Gizmos.color;
                 DrawMapOutline(data);
-                Gizmos.color = c;
-                DrawNodes(data);
                 Gizmos.color = Color.green;
                 Gizmos.DrawWireCube(data.Position, data.Bounds.size);
+                DrawNodes(data);
                 Gizmos.color = c;
             }
         }
 
         void DrawSubNodes(Vector3 currOrigin, GridData data)
         {
-            return;
-            var s = data.subGridSize / data.SubNodeSize;
-            var nodeSize = data.SubNodeSize;
-            var halfNodeSize = nodeSize / 2;
-            var center = currOrigin;
-
-            for (var z = -s / 2; z < s / 2; z++)
-            for (var y = -s / 2; y < s / 2; y++)
-            for (var x = -s / 2; x < s / 2; x++)
+            var s = Mathf.CeilToInt(data.subGridResolution / 2f);
+            Gizmos.color = Color.grey * .25f;
+            for (var z = -s; z < s; z++)
+            for (var y = -s; y < s; y++)
+            for (var x = -s; x < s; x++)
             {
-                var newOffset = new Vector3(halfNodeSize + nodeSize * x, halfNodeSize + nodeSize * y,
-                    halfNodeSize + nodeSize * z);
-                Gizmos.color = Color.grey * .25f;
-                Gizmos.DrawWireCube(center + newOffset,
-                    Vector3.one * data.nodeSize - Vector3.one * nodeVizSpaceSize);
+                var newOffset  = data.SubNodeOffsetPosition(currOrigin, x, y, z);
+                Gizmos.DrawWireCube(currOrigin + newOffset,
+                    Vector3.one * data.SubNodeSize - Vector3.one * nodeVizSpaceSize);
             }
         }
 
         void DrawNodes(GridData data)
         {
-            var extra = data.extraRows;
-            var s = data.GridSize;
             var nodeSize = data.nodeSize;
-            var halfNodeSize = nodeSize / 2;
             var center = data.Position;
 
-            var maxX = Mathf.CeilToInt((s.x + extra * 2) / nodeSize);
-            var maxY = Mathf.CeilToInt((s.y + extra * 2) / nodeSize);
-            var maxZ = Mathf.CeilToInt((s.z + extra * 2) / nodeSize);
-
-
-            // var origin = center - halfGridSize;
-            //confirm origin
-            Gizmos.color = Color.green;
             Gizmos.DrawWireCube(center, Vector3.one * nodeSize);
+            Gizmos.color = Color.red * .5f;
 
-            for (var z = -maxX / 2; z < maxX / 2; z++)
-            for (var y = -maxY / 2; y < maxY / 2; y++)
-            for (var x = -maxZ / 2; x < maxZ / 2; x++)
+            var max = data.GetSize();
+            for (var z = -max.z; z < max.z; z++)
+            for (var y = -max.y; y < max.y; y++)
+            for (var x = -max.x; x < max.x; x++)
             {
-                var centerIndex = new Vector3Int(x, y, z);
-                DrawSubNodes(centerIndex, data);
-                var newOffset = new Vector3(halfNodeSize + nodeSize * x, halfNodeSize + nodeSize * y,
-                    halfNodeSize + nodeSize * z);
-                Gizmos.color = Color.red * .5f;
-                Gizmos.DrawWireCube(center + newOffset,
+                var currentOrigin = center + data.NodeOffsetPosition( x,y,z);
+                DrawSubNodes(currentOrigin, data);
+                Gizmos.DrawWireCube(currentOrigin,
                     Vector3.one * data.nodeSize - Vector3.one * nodeVizSpaceSize);
             }
         }
@@ -87,11 +68,9 @@ public partial class Voxelizer
         void DrawMapOutline(GridData data)
         {
             var size = data.GridSize + Vector3Int.one * data.extraRows;
-            var c2 = Gizmos.color;
             var p = data.Position;
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireCube(p, size);
-            Gizmos.color = c2;
         }
     }
 }

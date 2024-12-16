@@ -12,6 +12,35 @@ public partial class Voxelizer : MonoBehaviour
     [NonSerialized] //
     public GridData EditorGridData;
 
+    public void BuildInitialGridData()
+    {
+        if (_gridData == null || _gridData.Length == 0) return;
+        foreach (var data in _gridData)
+        {
+            if (!data || !data.IsInitialized) continue;
+            var max = data.GetSize();
+            for (var z = -max.z; z < max.z; z++)
+            for (var y = -max.y; y < max.y; y++)
+            for (var x = -max.x; x < max.x; x++)
+            {
+                var currentOrigin = data.NodeOffsetPosition(x, y, z);
+                IterateSubNodes(currentOrigin, data);
+            }
+        }
+    }
+
+    private void IterateSubNodes(Vector3 currOrigin, GridData data)
+    {
+        var s = Mathf.CeilToInt(data.subGridResolution / 2f);
+        for (var z = -s; z < s; z++)
+        for (var y = -s; y < s; y++)
+        for (var x = -s; x < s; x++)
+        {
+            var newOffset = data.SubNodeOffsetPosition(currOrigin, x, y, z);
+            var currPos = currOrigin + newOffset;
+        }
+    }
+
     public void GetValidGameObjects(ref GameObject[] gameObjects)
     {
         if (transform.childCount == 0)
@@ -61,7 +90,8 @@ public partial class Voxelizer : MonoBehaviour
     {
         _gameObjects = gameObjects;
 
-        if (_gridData.Length > 0)
+
+        if (_gridData is { Length: > 0 })
             foreach (var gridData in _gridData.ToArray())
                 DestroyImmediate(gridData); // Destroy ScriptableObject instance
 
@@ -77,15 +107,17 @@ public partial class Voxelizer : MonoBehaviour
             _gridData[i] = newData;
         }
 
+        return;
+
         GridData CloneGridData(GridData gridData)
         {
             var newData = ScriptableObject.CreateInstance<GridData>();
-            var fields = currentSettings.GetType()
+            var fields = gridData.GetType()
                 .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var field in fields)
             {
                 if (field.IsNotSerialized) continue; // Skip non-serialized fields
-                var value = field.GetValue(currentSettings);
+                var value = field.GetValue(gridData);
                 field.SetValue(newData, value);
             }
 

@@ -30,6 +30,8 @@ namespace Editor
                 return;
             }
 
+            var data = GetCurrentGridData();
+
             GUILayout.BeginVertical(EditorStyles.helpBox);
 
             _isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(_isExpanded,
@@ -58,32 +60,32 @@ namespace Editor
 
                 // Begin detecting changes for this field
                 EditorGUI.BeginChangeCheck();
-
+                if (!data) return;
                 object newValue = null;
                 // Render field based on its type and detect changes
                 if (field.FieldType == typeof(int))
-                    newValue = EditorGUILayout.IntSlider((int)field.GetValue(_gridData), 0, 15,
+                    newValue = EditorGUILayout.IntSlider((int)field.GetValue(data), 0, 15,
                         GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType == typeof(float))
-                    newValue = EditorGUILayout.Slider((float)field.GetValue(_gridData), 0.1f, 10,
+                    newValue = EditorGUILayout.Slider((float)field.GetValue(data), 0.1f, 10,
                         GUILayout.ExpandWidth(true));
                 else if (field.FieldType == typeof(string))
-                    newValue = EditorGUILayout.TextField((string)field.GetValue(_gridData),
+                    newValue = EditorGUILayout.TextField((string)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType == typeof(bool))
-                    newValue = EditorGUILayout.Toggle((bool)field.GetValue(_gridData),
+                    newValue = EditorGUILayout.Toggle((bool)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType == typeof(Color))
-                    newValue = EditorGUILayout.ColorField((Color)field.GetValue(_gridData),
+                    newValue = EditorGUILayout.ColorField((Color)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType == typeof(Vector3))
                     newValue = EditorGUILayout.Vector3Field("",
-                        (Vector3)field.GetValue(_gridData), GUILayout.ExpandWidth(true)); // Assign current value
+                        (Vector3)field.GetValue(data), GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType == typeof(Vector3Int))
                     newValue = EditorGUILayout.Vector3IntField("",
-                        (Vector3Int)field.GetValue(_gridData), GUILayout.ExpandWidth(true)); // Assign current value
+                        (Vector3Int)field.GetValue(data), GUILayout.ExpandWidth(true)); // Assign current value
                 else if (field.FieldType.IsEnum)
-                    newValue = EditorGUILayout.EnumPopup((Enum)field.GetValue(_gridData),
+                    newValue = EditorGUILayout.EnumPopup((Enum)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
                 else
                     GUILayout.Label("Unsupported Type");
@@ -92,9 +94,9 @@ namespace Editor
                 if (EditorGUI.EndChangeCheck() && newValue != null)
                 {
                     didChange = true;
-                    Undo.RecordObject(_gridData, $"Modify {field.Name}");
-                    field.SetValue(_gridData, newValue); // Set the updated value back to the ScriptableObject
-                    EditorUtility.SetDirty(_gridData); // Mark as dirty to save changes
+                    Undo.RecordObject(data, $"Modify {field.Name}");
+                    field.SetValue(data, newValue); // Set the updated value back to the ScriptableObject
+                    EditorUtility.SetDirty(data); // Mark as dirty to save changes
                 }
 
                 GUILayout.EndHorizontal();
@@ -103,7 +105,7 @@ namespace Editor
 
             var voxelizer = Object.FindFirstObjectByType<Voxelizer>(); // Find the Voxelizer instance
             if (voxelizer && (!voxelizer.EditorGridData || didChange))
-                voxelizer.EditorGridData = _gridData;
+                voxelizer.EditorGridData = data;
             EditorGUILayout.EndFoldoutHeaderGroup();
             GUILayout.EndVertical();
         }
