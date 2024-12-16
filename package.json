@@ -2,6 +2,6 @@
   "name": "com.oikoume.voxelizer",
   "version": "0.0.1",
   "displayName": "Voxelizer",
-  "description": "Voxelizer: takes mesh, turns into voxel",
+  "description": "Voxelizer: takes mesh, turns into voxels",
   "unity": "6000.0"
 }
