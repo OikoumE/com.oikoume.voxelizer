@@ -11,6 +11,8 @@ namespace Editor
         public static Transform voxelizerParent;
         public static GameObject[] gameObjects;
         private static bool _isExpanded;
+        private static bool _isScriptableObjectFieldsExpanded;
+        private static bool _isRenderFieldsExpanded=true;
         internal static Voxelizer voxelizer;
         private static Vector2 _listScrollPosition = Vector2.zero;
 
@@ -18,18 +20,35 @@ namespace Editor
         public static void Render()
         {
             GUILayout.Label("Voxelizer", EditorStyles.boldLabel);
-            GUILayout.Space(10);
-            ScriptableObjectTypeRenderer.RenderScriptableObjectFields(typeof(GridData));
-            GUILayout.Space(10);
-            ScriptableObjectTypeRenderer.RenderFields(typeof(VoxelizerGizmosSettings));
-            // FindObjectsByType<Voxelizer>();
-            // Shows window content depending on state
+            DrawGridDataSettingsFoldout();
+            DrawGizmoSettingsFoldout();
             DrawCreateVoxelizerButtons();
-
-            EditorGUILayout.Space();
             DrawList();
         }
 
+        private static void DrawGizmoSettingsFoldout()
+        {
+            GUILayout.Space(10);
+            GUILayout.BeginVertical(EditorStyles.helpBox);
+            _isRenderFieldsExpanded =
+                EditorGUILayout.BeginFoldoutHeaderGroup(_isRenderFieldsExpanded, "Gizmo Settings");
+            if (_isRenderFieldsExpanded)
+                ScriptableObjectTypeRenderer.RenderFields(typeof(VoxelizerGizmosSettings));
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            GUILayout.EndVertical();
+        }
+
+        private static void DrawGridDataSettingsFoldout()
+        {
+            GUILayout.Space(10);
+            GUILayout.BeginVertical(EditorStyles.helpBox);
+            _isScriptableObjectFieldsExpanded =
+                EditorGUILayout.BeginFoldoutHeaderGroup(_isScriptableObjectFieldsExpanded, "GridData Settings");
+            if (_isScriptableObjectFieldsExpanded)
+                ScriptableObjectTypeRenderer.RenderScriptableObjectFields(typeof(GridData));
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            GUILayout.EndVertical();
+        }
 
         private static void DrawList()
         {
@@ -86,8 +105,6 @@ namespace Editor
 
         private static void DrawCreateVoxelizerButtons()
         {
-            voxelizerParent =
-                (Transform)EditorGUILayout.ObjectField("Target Transform", voxelizerParent, typeof(Transform), true);
             if (!voxelizerParent)
             {
                 voxelizer = Object.FindFirstObjectByType<Voxelizer>();

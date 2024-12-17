@@ -10,14 +10,16 @@ public class GridNode
     public GridNodeType nodeType;
     public Vector3 position;
     public Vector3 size;
-    public int index;
+    public Vector3Int index;
+    public bool[,,] SubNodes;
 
-    public GridNode(Vector3 position, GridNodeType nodeType, Vector3 size, int index)
+    public GridNode(Vector3 position, GridNodeType nodeType, Vector3 size, Vector3Int index, bool[,,] subNodes)
     {
         this.nodeType = nodeType;
         this.position = position;
         this.size = size;
         this.index = index;
+        SubNodes = subNodes;
     }
 }
 
@@ -39,55 +41,55 @@ public partial class Voxelizer : MonoBehaviour
     public void BuildInitialGridData(GridData[] gridDataArray)
     {
         if (gridDataArray == null || gridDataArray.Length == 0) return;
-        foreach (var gridData in gridDataArray)
+        foreach (var data in gridDataArray)
         {
-            if (!gridData || !gridData.IsInitialized) continue;
-            var max = gridData.GetSize();
-            var nodes = new GridNode[max.x * max.y * max.z];
+            if (!data || !data.IsInitialized) continue;
+            var extra = data.extraRows;
 
-            for (var z = -max.z; z < max.z; z++)
-            for (var y = -max.y; y < max.y; y++)
-            for (var x = -max.x; x < max.x; x++)
+            var max = data.GetSize();
+            var nodes = new GridNode[max.x, max.y, max.z];
+            var halfExtents = Vector3.one / 2;
+            for (var z = 0; z < max.z; z++)
+            for (var y = 0; y < max.y; y++)
+            for (var x = 0; x < max.x; x++)
             {
-                var index = (z + max.z) * max.x * max.y + (y + max.y) * max.x + x + max.x;
-                var currentOrigin = gridData.NodeOffsetPosition(x, y, z);
-                nodes[index] = IterateSubNodes(currentOrigin, gridData);
+                var currentOrigin = data.NodeOffsetPosition(x, y, z);
+                if (!Physics.CheckBox(currentOrigin, halfExtents)) continue;
+                var subNodes = IterateSubNodes(currentOrigin, data);
+                var index = new Vector3Int(x, y, z);
+                var node = new GridNode(currentOrigin, GridNodeType.Empty, Vector3.one, index, subNodes);
+                nodes[x, y, z] = node;
             }
 
-            gridData.Nodes = nodes;
+            data.Nodes = nodes;
         }
     }
 
-    
-    
-    private GridNode IterateSubNodes(Vector3 currOrigin, GridData data)
-    {
-        var ns = data.SubNodeSize;
-        var s = Mathf.CeilToInt(data.subGridResolution / 2f);
-        var maxResults = 10;
-        var results = new Collider[maxResults];
-        for (var z = -s; z < s; z++)
-        for (var y = -s; y < s; y++)
-        for (var x = -s; x < s; x++)
-        {
-            var newPos = data.SubNodeOffsetPosition(currOrigin, x, y, z);
-            var index = (z + s) * data.subGridResolution * data.subGridResolution
-                        + (y + s) * data.subGridResolution
-                        + x + s;
-            var numberOfHits = Physics.OverlapBoxNonAlloc(newPos, ns * Vector3.one, results);
-            if (numberOfHits <= 0) continue;
-            // Vector3 position, GridNodeType nodeType, Vector3 size, int index)
-            foreach (var result in results)
-            {
-                //TODO determine the level of marched cube
-                // check each collider point or w.e
-            }
 
-            //TODO if valid
-            return new GridNode(newPos, GridNodeType.Empty, data.nodeSize * Vector3.one, index);
+    private bool[,,] IterateSubNodes(Vector3 currOrigin, GridData data)
+    {
+        var subNodeSize = 1 / data.subGridResolution;
+        // origin
+        var halfNodeSize = Vector3.one * 1f / 2f;
+        var halfSubNodeSize = subNodeSize / 2f * Vector3.one;
+        var newOrigin = currOrigin + halfNodeSize - halfSubNodeSize;
+
+
+        var res = data.subGridResolution;
+        var subNodes = new bool[res, res, res];
+
+        for (var z = 0; z < res; z++)
+        for (var y = 0; y < res; y++)
+        for (var x = 0; x < res; x++)
+        {
+            var subPosition = newOrigin - new Vector3(x, y, z) * subNodeSize;
+            var halfExtents = Vector3.one * subNodeSize / 2;
+            var index = z * res * res + y * res + x;
+
+            subNodes[x, y, z] = Physics.CheckBox(subPosition, halfExtents);
         }
 
-        return null;
+        return subNodes;
     }
 
     public void GetValidGameObjects(ref GameObject[] gameObjects)
@@ -155,6 +157,9 @@ public partial class Voxelizer : MonoBehaviour
             newData.Initialize(o, meshCollider);
             _gridData[i] = newData;
         }
+
+        BuildInitialGridData(_gridData);
+
 
         return;
 

@@ -7,18 +7,19 @@ namespace Editor
     [CustomEditor(typeof(Voxelizer), true)]
     public class VoxelizerEditor : UnityEditor.Editor
     {
-        private static void DrawGridData()
+        private void DisableScriptNameRender()
         {
-            GUILayout.Space(10);
-            // ScriptableObjectTypeRenderer.RenderFields(typeof(GridData));
-            VoxelizerRenderer.Render();
+            // Exclude the script field
+            serializedObject.Update();
+            DrawPropertiesExcluding(serializedObject, "m_Script");
         }
 
         public override void OnInspectorGUI()
         {
+            DisableScriptNameRender();
             // Add default buttons (Save/Apply, etc.)
-            // DrawDefaultInspector();
-            DrawGridData();
+            GUILayout.Space(10);
+            VoxelizerRenderer.Render();
         }
     }
 }

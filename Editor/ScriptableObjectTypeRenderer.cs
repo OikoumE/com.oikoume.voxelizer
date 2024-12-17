@@ -46,21 +46,13 @@ namespace Editor
             Object data = GetCurrentGridData();
             if (type == typeof(VoxelizerGizmosSettings))
                 data = VoxelizerSettingsEditor.GetSettings();
+            // if (!data) return;
 
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            _isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(_isExpanded,
-                $"{type.Name} Settings");
-            if (!_isExpanded)
-            {
-                EditorGUILayout.EndFoldoutHeaderGroup();
-                GUILayout.EndVertical();
-                return;
-            }
 
             // Get all fields of the type
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             var didChange = false;
+
 
             // Iterate over fields
             foreach (var field in fields)
@@ -69,39 +61,52 @@ namespace Editor
                 if (!field.IsPublic && !field.IsDefined(typeof(SerializeField), true)) continue;
                 if (field.IsDefined(typeof(HideInInspector), true)) continue;
 
+                // Default range values
+                float min = 0f, max = 15f;
+                // Check for Range or Min/Max attributes
+                var rangeAttribute = field.GetCustomAttribute<RangeAttribute>();
+                if (rangeAttribute != null)
+                {
+                    min = rangeAttribute.min;
+                    max = rangeAttribute.max;
+                }
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(ObjectNames.NicifyVariableName(field.Name), GUILayout.ExpandWidth(true));
-
                 // Begin detecting changes for this field
                 EditorGUI.BeginChangeCheck();
-                if (!data) return;
+                var fieldType = field.FieldType;
                 object newValue = null;
                 // Render field based on its type and detect changes
-                if (field.FieldType == typeof(int))
-                    newValue = EditorGUILayout.IntSlider((int)field.GetValue(data), 0, 15,
+                if (fieldType == typeof(int))
+                    newValue = EditorGUILayout.IntSlider((int)field.GetValue(data), (int)min, (int)max,
                         GUILayout.ExpandWidth(true)); // Assign current value
-                else if (field.FieldType == typeof(float))
-                    newValue = EditorGUILayout.Slider((float)field.GetValue(data), 0.1f, 10,
+                else if (fieldType == typeof(float))
+                    newValue = EditorGUILayout.Slider((float)field.GetValue(data), min, max,
                         GUILayout.ExpandWidth(true));
-                else if (field.FieldType == typeof(string))
+                else if (fieldType == typeof(string))
                     newValue = EditorGUILayout.TextField((string)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
-                else if (field.FieldType == typeof(bool))
+                else if (fieldType == typeof(bool))
                     newValue = EditorGUILayout.Toggle((bool)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
-                else if (field.FieldType == typeof(Color))
+                else if (fieldType == typeof(Color))
                     newValue = EditorGUILayout.ColorField((Color)field.GetValue(data),
                         GUILayout.ExpandWidth(true)); // Assign current value
-                else if (field.FieldType == typeof(Vector3))
+                else if (fieldType == typeof(Vector3))
                     newValue = EditorGUILayout.Vector3Field("",
                         (Vector3)field.GetValue(data), GUILayout.ExpandWidth(true)); // Assign current value
-                else if (field.FieldType == typeof(Vector3Int))
+                else if (fieldType == typeof(Vector3Int))
                     newValue = EditorGUILayout.Vector3IntField("",
                         (Vector3Int)field.GetValue(data), GUILayout.ExpandWidth(true)); // Assign current value
-                else if (field.FieldType.IsEnum)
-                    newValue = EditorGUILayout.EnumPopup((Enum)field.GetValue(data),
-                        GUILayout.ExpandWidth(true)); // Assign current value
+                else if (fieldType.IsEnum)
+                    if (fieldType.GetCustomAttributes(typeof(FlagsAttribute), false).Length > 0)
+                        // Use EnumFlagsField for flagged enums
+                        newValue = EditorGUILayout.EnumFlagsField((Enum)field.GetValue(data),
+                            GUILayout.ExpandWidth(true));
+                    else
+                        // Use EnumPopup for regular enums
+                        newValue = EditorGUILayout.EnumPopup((Enum)field.GetValue(data), GUILayout.ExpandWidth(true));
                 else
                     GUILayout.Label("Unsupported Type");
 
@@ -109,9 +114,7 @@ namespace Editor
                 if (EditorGUI.EndChangeCheck() && newValue != null)
                 {
                     didChange = true;
-
-
-                    Undo.RecordObject(data, $"Modify {field.Name}");
+                    Undo.RecordObject(data, $"Modify {fieldType}>{field.Name}");
                     field.SetValue(data, newValue); // Set the updated value back to the ScriptableObject
                     EditorUtility.SetDirty(data); // Mark as dirty to save changes
                 }
@@ -126,12 +129,9 @@ namespace Editor
             else
             {
                 _voxelizer ??= Object.FindFirstObjectByType<Voxelizer>(); // Find the Voxelizer instance
-                if (_voxelizer && (!_voxelizer.EditorGridData || didChange))
+                if (_voxelizer && !_voxelizer.EditorGridData)
                     _voxelizer.EditorGridData = (GridData)data;
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
-            GUILayout.EndVertical();
         }
     }
 }
