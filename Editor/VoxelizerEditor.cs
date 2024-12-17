@@ -17,7 +17,7 @@ namespace Editor
         public override void OnInspectorGUI()
         {
             // Add default buttons (Save/Apply, etc.)
-            DrawDefaultInspector();
+            // DrawDefaultInspector();
             DrawGridData();
         }
     }

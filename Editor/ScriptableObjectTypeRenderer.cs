@@ -10,6 +10,7 @@ namespace Editor
     {
         private static bool _isExpanded;
         private static GridData _gridData;
+        private static Voxelizer _voxelizer;
 
         public static GridData GetCurrentGridData()
         {
@@ -18,11 +19,12 @@ namespace Editor
             return _gridData;
         }
 
+
         /// <summary>
         ///     Renders all supported fields for a given ScriptableObject type.
         /// </summary>
         /// <param name="type">The type of the ScriptableObject to inspect.</param>
-        public static void RenderFields(Type type)
+        public static void RenderScriptableObjectFields(Type type)
         {
             if (!typeof(ScriptableObject).IsAssignableFrom(type))
             {
@@ -30,7 +32,20 @@ namespace Editor
                 return;
             }
 
-            var data = GetCurrentGridData();
+            RenderFields(type);
+        }
+
+
+        /// <summary>
+        ///     Renders all supported fields for a given type.
+        /// </summary>
+        /// <param name="type">The type of the object to inspect.</param>
+        public static void RenderFields(Type type)
+        {
+            // if (type == typeof(GridData))
+            Object data = GetCurrentGridData();
+            if (type == typeof(VoxelizerGizmosSettings))
+                data = VoxelizerSettingsEditor.GetSettings();
 
             GUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -94,6 +109,8 @@ namespace Editor
                 if (EditorGUI.EndChangeCheck() && newValue != null)
                 {
                     didChange = true;
+
+
                     Undo.RecordObject(data, $"Modify {field.Name}");
                     field.SetValue(data, newValue); // Set the updated value back to the ScriptableObject
                     EditorUtility.SetDirty(data); // Mark as dirty to save changes
@@ -103,9 +120,9 @@ namespace Editor
             }
 
 
-            var voxelizer = Object.FindFirstObjectByType<Voxelizer>(); // Find the Voxelizer instance
-            if (voxelizer && (!voxelizer.EditorGridData || didChange))
-                voxelizer.EditorGridData = data;
+            _voxelizer ??= Object.FindFirstObjectByType<Voxelizer>(); // Find the Voxelizer instance
+            if (_voxelizer && (!_voxelizer.EditorGridData || didChange))
+                _voxelizer.EditorGridData = (GridData)data;
             EditorGUILayout.EndFoldoutHeaderGroup();
             GUILayout.EndVertical();
         }

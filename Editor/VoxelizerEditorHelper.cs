@@ -61,6 +61,17 @@ namespace Editor
             return t;
         }
 
+        public static float DrawFloatSlider(string label, float currVal, float indent, float min = 0, float max = 100)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(indent);
+            GUILayout.Label(label);
+            var newInt = EditorGUILayout.Slider(currVal, min, max, GUILayout.ExpandWidth(true));
+            GUILayout.EndHorizontal();
+
+            return newInt;
+        }
+
         public static int DrawIntSlider(string label, int currVal, int indent, int min = 0, int max = 100)
         {
             GUILayout.BeginHorizontal();

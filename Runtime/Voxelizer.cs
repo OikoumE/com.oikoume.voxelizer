@@ -36,13 +36,13 @@ public partial class Voxelizer : MonoBehaviour
     [NonSerialized] //
     public GridData EditorGridData;
 
-    public void BuildInitialGridData()
+    public void BuildInitialGridData(GridData[] gridDataArray)
     {
-        if (_gridData == null || _gridData.Length == 0) return;
-        foreach (var data in _gridData)
+        if (gridDataArray == null || gridDataArray.Length == 0) return;
+        foreach (var gridData in gridDataArray)
         {
-            if (!data || !data.IsInitialized) continue;
-            var max = data.GetSize();
+            if (!gridData || !gridData.IsInitialized) continue;
+            var max = gridData.GetSize();
             var nodes = new GridNode[max.x * max.y * max.z];
 
             for (var z = -max.z; z < max.z; z++)
@@ -50,14 +50,16 @@ public partial class Voxelizer : MonoBehaviour
             for (var x = -max.x; x < max.x; x++)
             {
                 var index = (z + max.z) * max.x * max.y + (y + max.y) * max.x + x + max.x;
-                var currentOrigin = data.NodeOffsetPosition(x, y, z);
-                nodes[index] = IterateSubNodes(currentOrigin, data);
+                var currentOrigin = gridData.NodeOffsetPosition(x, y, z);
+                nodes[index] = IterateSubNodes(currentOrigin, gridData);
             }
 
-            data.Nodes = nodes;
+            gridData.Nodes = nodes;
         }
     }
 
+    
+    
     private GridNode IterateSubNodes(Vector3 currOrigin, GridData data)
     {
         var ns = data.SubNodeSize;

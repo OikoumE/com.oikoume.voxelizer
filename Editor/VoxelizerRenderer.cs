@@ -3,16 +3,75 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+
 namespace Editor
 {
+    public static class VoxelizerSettingsEditor
+    {
+        private static VoxelizerGizmosSettings _settings;
+        private static bool _showGizmo;
+        private static bool _isExpanded;
+        private static Voxelizer _voxelizer;
+
+        public static VoxelizerGizmosSettings GetSettings()
+        {
+            return _settings;
+        }
+
+        public static void Render()
+        {
+            EditorGUILayout.Space();
+            // EditorGUI.BeginChangeCheck();
+            //
+            //   GUILayout.BeginVertical(EditorStyles.helpBox);
+            //   _isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(_isExpanded,
+            //       "Voxelizer Settings: " );
+            // if (!_isExpanded)
+            // {
+            //     EndHelperBox();
+            //     return;
+            // }  
+            //
+            // _showGizmo = VoxelizerEditorHelper.DrawToggle("Show Gizmos", _showGizmo);
+            //
+            // var spaceWas = _settings.NodeSpace;
+            // var spaceIs = VoxelizerEditorHelper.DrawFloatSlider("", spaceWas, 0, 10, 100);
+            //
+            // if (!Mathf.Approximately(spaceIs, spaceWas))
+            // {
+            //     _settings.NodeSpace  = spaceIs;
+            // }
+            //
+            // //DO STUFF
+            // if (EditorGUI.EndChangeCheck() )
+            // {
+            //     Voxelizer.GizmosSettings = _settings;
+            //     Undo.RecordObject(_settings, $"Modify {field.Name}");
+            //     EditorUtility.SetDirty(_settings); // Mark as dirty to save changes
+            // }
+
+
+            // EndHelperBox();
+            ScriptableObjectTypeRenderer.RenderFields(typeof(VoxelizerGizmosSettings));
+            return;
+
+            void EndHelperBox()
+            {
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                GUILayout.EndVertical();
+                GUILayout.FlexibleSpace();
+            }
+        }
+    }
+
     public static class VoxelizerRenderer
     {
         public static Transform voxelizerParent;
         public static GameObject[] gameObjects;
         private static bool _isExpanded;
         internal static Voxelizer voxelizer;
-        private static bool _showBoundingBox = true;
         private static Vector2 _listScrollPosition = Vector2.zero;
+
 
         public static void Render()
         {
@@ -20,8 +79,7 @@ namespace Editor
             DrawGridData();
             // FindObjectsByType<Voxelizer>();
             // Shows window content depending on state
-            _showBoundingBox = VoxelizerEditorHelper.DrawToggle("Show BoundingBoxes", _showBoundingBox);
-            CreateVoxelizerGameObject();
+            DrawCreateVoxelizerButtons();
             EditorGUILayout.Space();
             DrawList();
         }
@@ -29,7 +87,7 @@ namespace Editor
         private static void DrawGridData()
         {
             GUILayout.Space(10);
-            ScriptableObjectTypeRenderer.RenderFields(typeof(GridData));
+            ScriptableObjectTypeRenderer.RenderScriptableObjectFields(typeof(GridData));
         }
 
         private static void DrawList()
@@ -89,7 +147,7 @@ namespace Editor
             }
         }
 
-        private static void CreateVoxelizerGameObject()
+        private static void DrawCreateVoxelizerButtons()
         {
             voxelizerParent =
                 (Transform)EditorGUILayout.ObjectField("Target Transform", voxelizerParent, typeof(Transform), true);
