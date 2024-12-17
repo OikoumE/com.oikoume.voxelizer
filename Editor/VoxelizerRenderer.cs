@@ -6,64 +6,6 @@ using Object = UnityEngine.Object;
 
 namespace Editor
 {
-    public static class VoxelizerSettingsEditor
-    {
-        private static VoxelizerGizmosSettings _settings;
-        private static bool _showGizmo;
-        private static bool _isExpanded;
-        private static Voxelizer _voxelizer;
-
-        public static VoxelizerGizmosSettings GetSettings()
-        {
-            return _settings;
-        }
-
-        public static void Render()
-        {
-            EditorGUILayout.Space();
-            // EditorGUI.BeginChangeCheck();
-            //
-            //   GUILayout.BeginVertical(EditorStyles.helpBox);
-            //   _isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(_isExpanded,
-            //       "Voxelizer Settings: " );
-            // if (!_isExpanded)
-            // {
-            //     EndHelperBox();
-            //     return;
-            // }  
-            //
-            // _showGizmo = VoxelizerEditorHelper.DrawToggle("Show Gizmos", _showGizmo);
-            //
-            // var spaceWas = _settings.NodeSpace;
-            // var spaceIs = VoxelizerEditorHelper.DrawFloatSlider("", spaceWas, 0, 10, 100);
-            //
-            // if (!Mathf.Approximately(spaceIs, spaceWas))
-            // {
-            //     _settings.NodeSpace  = spaceIs;
-            // }
-            //
-            // //DO STUFF
-            // if (EditorGUI.EndChangeCheck() )
-            // {
-            //     Voxelizer.GizmosSettings = _settings;
-            //     Undo.RecordObject(_settings, $"Modify {field.Name}");
-            //     EditorUtility.SetDirty(_settings); // Mark as dirty to save changes
-            // }
-
-
-            // EndHelperBox();
-            ScriptableObjectTypeRenderer.RenderFields(typeof(VoxelizerGizmosSettings));
-            return;
-
-            void EndHelperBox()
-            {
-                EditorGUILayout.EndFoldoutHeaderGroup();
-                GUILayout.EndVertical();
-                GUILayout.FlexibleSpace();
-            }
-        }
-    }
-
     public static class VoxelizerRenderer
     {
         public static Transform voxelizerParent;
@@ -76,51 +18,46 @@ namespace Editor
         public static void Render()
         {
             GUILayout.Label("Voxelizer", EditorStyles.boldLabel);
-            DrawGridData();
+            GUILayout.Space(10);
+            ScriptableObjectTypeRenderer.RenderScriptableObjectFields(typeof(GridData));
+            GUILayout.Space(10);
+            ScriptableObjectTypeRenderer.RenderFields(typeof(VoxelizerGizmosSettings));
             // FindObjectsByType<Voxelizer>();
             // Shows window content depending on state
             DrawCreateVoxelizerButtons();
+
             EditorGUILayout.Space();
             DrawList();
         }
 
-        private static void DrawGridData()
-        {
-            GUILayout.Space(10);
-            ScriptableObjectTypeRenderer.RenderScriptableObjectFields(typeof(GridData));
-        }
 
         private static void DrawList()
         {
-            DrawListItems();
-            return;
+            EditorGUILayout.Space();
+            GUILayout.BeginVertical(EditorStyles.helpBox);
+            if (gameObjects == null)
+                gameObjects = Array.Empty<GameObject>();
 
-            void DrawListItems()
+            _isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(_isExpanded,
+                "Valid Voxelizeable Objects: " + gameObjects.Length);
+            DrawVoxelizeButtons();
+
+            if (_isExpanded)
             {
-                EditorGUILayout.Space();
-                GUILayout.BeginVertical(EditorStyles.helpBox);
-                if (gameObjects == null)
-                    gameObjects = Array.Empty<GameObject>();
-
-                _isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup(_isExpanded,
-                    "Valid Voxelizeable Objects: " + gameObjects.Length);
-                DrawVoxelizeButtons();
-
-                if (_isExpanded)
-                {
-                    _listScrollPosition =
-                        EditorGUILayout.BeginScrollView(_listScrollPosition, GUILayout.ExpandHeight(true));
-                    for (var i = 0; i < gameObjects.Length; i++)
-                        gameObjects[i] = (GameObject)EditorGUILayout.ObjectField($"GameObject {i + 1}",
-                            gameObjects[i],
-                            typeof(GameObject), true);
-                    EditorGUILayout.EndScrollView();
-                }
-
-                EditorGUILayout.EndFoldoutHeaderGroup();
-                GUILayout.EndVertical();
-                GUILayout.FlexibleSpace();
+                _listScrollPosition =
+                    EditorGUILayout.BeginScrollView(_listScrollPosition, GUILayout.ExpandHeight(true));
+                for (var i = 0; i < gameObjects.Length; i++)
+                    gameObjects[i] = (GameObject)EditorGUILayout.ObjectField($"GameObject {i + 1}",
+                        gameObjects[i],
+                        typeof(GameObject), true);
+                EditorGUILayout.EndScrollView();
             }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+
+            return;
 
             void DrawVoxelizeButtons()
             {

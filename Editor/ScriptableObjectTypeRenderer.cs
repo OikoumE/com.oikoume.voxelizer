@@ -119,10 +119,17 @@ namespace Editor
                 GUILayout.EndHorizontal();
             }
 
+            if (type == typeof(VoxelizerGizmosSettings))
+            {
+                VoxelizerSettingsEditor.SetSettings((VoxelizerGizmosSettings)data);
+            }
+            else
+            {
+                _voxelizer ??= Object.FindFirstObjectByType<Voxelizer>(); // Find the Voxelizer instance
+                if (_voxelizer && (!_voxelizer.EditorGridData || didChange))
+                    _voxelizer.EditorGridData = (GridData)data;
+            }
 
-            _voxelizer ??= Object.FindFirstObjectByType<Voxelizer>(); // Find the Voxelizer instance
-            if (_voxelizer && (!_voxelizer.EditorGridData || didChange))
-                _voxelizer.EditorGridData = (GridData)data;
             EditorGUILayout.EndFoldoutHeaderGroup();
             GUILayout.EndVertical();
         }

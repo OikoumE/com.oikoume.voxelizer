@@ -17,10 +17,10 @@ public class VoxelizerGizmosSettings : Object
     }
 
     [Range(0.01f, 0.5f)] //
-    public float NodeSpace = 0.1f;
+    public float nodeSpace = 0.1f;
 
-    public bool ShowGizmos;
-    public GizmoTypes GizmoType = GizmoTypes.All;
+    public bool showGizmos;
+    public GizmoTypes gizmoType = GizmoTypes.All;
 }
 
 public partial class Voxelizer
@@ -29,7 +29,7 @@ public partial class Voxelizer
 
     private void OnDrawGizmos()
     {
-        if (!GizmosSettings.ShowGizmos) return;
+        if (!GizmosSettings.showGizmos) return;
         Gizmos.DrawCube(transform.position, Vector3.one * .25f);
 
         DrawArray();
@@ -61,7 +61,7 @@ public partial class Voxelizer
             for (var y = -s; y < s; y++)
             for (var x = -s; x < s; x++)
                 Gizmos.DrawWireCube(data.SubNodeOffsetPosition(currOrigin, x, y, z),
-                    Vector3.one * data.SubNodeSize - Vector3.one * nodeVizSpaceSize);
+                    Vector3.one * data.SubNodeSize - Vector3.one * GizmosSettings.nodeSpace);
             Gizmos.color = c;
         }
 
@@ -82,7 +82,7 @@ public partial class Voxelizer
                 var currentOrigin = data.NodeOffsetPosition(x, y, z);
                 DrawSubNodes(currentOrigin, data);
                 Gizmos.DrawWireCube(currentOrigin,
-                    Vector3.one * data.nodeSize - Vector3.one * nodeVizSpaceSize);
+                    Vector3.one * data.nodeSize - Vector3.one * GizmosSettings.nodeSpace);
             }
 
             Gizmos.color = c;
